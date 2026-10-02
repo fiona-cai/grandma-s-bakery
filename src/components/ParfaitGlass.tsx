@@ -69,8 +69,11 @@ export function ParfaitGlass({
 
       {spoon ? (
         <g className={animate ? "layer-drop" : undefined} style={{ animationDelay: "900ms" }}>
-          <rect x="80" y="-6" width="6" height="96" rx="3" fill="#2b8a84" transform="rotate(14 83 40)" />
-          <ellipse cx="72" cy="-8" rx="8" ry="11" fill="#2b8a84" transform="rotate(14 83 40)" />
+          <g transform="rotate(14 83 60)">
+            <rect x="80.5" y="4" width="5" height="86" rx="2.5" fill="#2b8a84" />
+            <ellipse cx="83" cy="4" rx="5.5" ry="8" fill="#2b8a84" />
+            <ellipse cx="81.5" cy="1.5" rx="1.6" ry="3" fill="#fff" opacity="0.45" />
+          </g>
         </g>
       ) : null}
 
@@ -229,7 +232,7 @@ function Topper({
   const whip = mix(creamColor, "#fffdf8", 0.75);
   const whipShade = shade(whip, -0.08);
   const peak = garnish?.id === "cream-dollop" ? 10 : 0;
-  const y = Math.min(top, 62);
+  const y = Math.min(top, 62) - 5;
 
   return (
     <g>
