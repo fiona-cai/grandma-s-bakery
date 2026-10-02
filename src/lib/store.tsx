@@ -17,19 +17,29 @@ export interface ShopState {
   fotm: Recipe | null;
   lastTasting: TastingResult[] | null;
   extraVisits: Record<string, number>;
+  replied: string[];
+  campusYes: boolean;
+  booksClosed: boolean;
 }
 
 const defaultState: ShopState = {
   fotm: null,
   lastTasting: null,
   extraVisits: {},
+  replied: [],
+  campusYes: false,
+  booksClosed: false,
 };
 
 interface ShopContextValue extends ShopState {
   adoptFotm: (recipe: Recipe, tasting: TastingResult[]) => void;
   clearFotm: () => void;
   stamp: (customerId: string) => void;
+  replyTo: (reviewId: string) => void;
+  takeCampus: (yes: boolean) => void;
+  closeBooks: () => void;
   customers: typeof CUSTOMERS;
+  stampsToday: number;
 }
 
 const ShopContext = createContext<ShopContextValue | null>(null);
@@ -64,9 +74,15 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       };
     });
 
+    const stampsToday = Object.values(state.extraVisits).reduce(
+      (sum, count) => sum + count,
+      0,
+    );
+
     return {
       ...state,
       customers,
+      stampsToday,
       adoptFotm: (recipe, tasting) =>
         setState((current) => ({ ...current, fotm: recipe, lastTasting: tasting })),
       clearFotm: () =>
@@ -78,7 +94,17 @@ export function ShopProvider({ children }: { children: ReactNode }) {
             ...current.extraVisits,
             [customerId]: (current.extraVisits[customerId] ?? 0) + 1,
           },
+          booksClosed: false,
         })),
+      replyTo: (reviewId) =>
+        setState((current) => ({
+          ...current,
+          replied: current.replied.includes(reviewId)
+            ? current.replied
+            : [...current.replied, reviewId],
+        })),
+      takeCampus: (yes) => setState((current) => ({ ...current, campusYes: yes })),
+      closeBooks: () => setState((current) => ({ ...current, booksClosed: true })),
     };
   }, [state]);
 

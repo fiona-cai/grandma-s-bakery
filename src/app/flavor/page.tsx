@@ -1,5 +1,6 @@
 "use client";
 
+import { GuestCard } from "@/components/GuestCard";
 import { ParfaitGlass } from "@/components/ParfaitGlass";
 import { PERSONA_MAP, PERSONAS } from "@/lib/personas";
 import { BAKERY_AUTUMN, generateBatch, recipeIngredients } from "@/lib/recipes";
@@ -75,9 +76,9 @@ export default function FlavorPage() {
           Invent a Fall Parfait, then let the neighborhood argue.
         </h1>
         <p className="mt-3 text-[var(--ink-soft)]">
-          Each glass is built from Grandma&apos;s pantry. The six tasters have
-          opinions, budgets, and a long memory of The Bakery&apos;s pumpkin cup.
-          Crown the one that wins the room — not the one that copies next door.
+          Each glass is built from Grandma&apos;s pantry and argued over by the
+          booths. The same recipe writes the window card — languages, allergens,
+          a traveler cup — so the line does not stop for Translate or Yelp.
         </p>
       </header>
 
@@ -205,6 +206,8 @@ export default function FlavorPage() {
           onCrown={() => crown(selected)}
         />
       ) : null}
+
+      {selected ? <GuestCard recipe={selected.recipe} /> : null}
     </div>
   );
 }
@@ -284,7 +287,8 @@ function TastingRoom({
         </button>
         {crowned ? (
           <p className="mt-3 text-sm text-[var(--ink-soft)]">
-            The morning list and the regulars board now follow this recipe.{" "}
+            The window card below is what guests read. The morning list and the
+            till follow the same glass.{" "}
             <Link href="/supplies" className="underline underline-offset-2">
               See what to buy
             </Link>

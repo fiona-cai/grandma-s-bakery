@@ -9,7 +9,7 @@ const LINKS = [
   { href: "/", label: "The shop" },
   { href: "/flavor", label: "Flavor studio" },
   { href: "/supplies", label: "Morning list" },
-  { href: "/loyalty", label: "Regulars" },
+  { href: "/loyalty", label: "Regulars & till" },
 ];
 
 export function Shell({ children }: { children: ReactNode }) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { STAMPS_FOR_FREE, stampsTowardFree } from "@/lib/customers";
+import { closeBooks, menuPrice } from "@/lib/desk";
 import { PERSONA_MAP, PERSONAS } from "@/lib/personas";
 import { useShop } from "@/lib/store";
 import { evaluateRecipe } from "@/lib/tasting";
@@ -9,7 +10,16 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 export default function LoyaltyPage() {
-  const { fotm, customers, stamp, lastTasting } = useShop();
+  const {
+    fotm,
+    customers,
+    stamp,
+    lastTasting,
+    stampsToday,
+    campusYes,
+    booksClosed,
+    closeBooks: lockBooks,
+  } = useShop();
   const [filter, setFilter] = useState<string>("all");
   const tasting = useMemo(
     () => (fotm ? lastTasting?.find((row) => row.recipe.id === fotm.id) ?? evaluateRecipe(fotm) : null),
@@ -44,17 +54,24 @@ export default function LoyaltyPage() {
     <div className="space-y-8">
       <header className="max-w-3xl">
         <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">
-          Regulars
+          Regulars & the till
         </p>
         <h1 className="mt-2 font-display text-4xl leading-tight">
-          The same six palates, but with names and stamp cards.
+          A stamp is a person and a line on tonight&apos;s close.
         </h1>
         <p className="mt-3 text-[var(--ink-soft)]">
-          Grandma used to keep this in her head. Each regular is matched to the
-          taster they taste like, so a crowned parfait can show who it will pull
-          back through the door.
+          Faces stay matched to the jury. Each stamp also writes the Verifone
+          tape, the cash drawer, and the pile Grandma used to sort at tax time.
         </p>
       </header>
+
+      <CloseStrip
+        menu={fotm ? menuPrice(fotm) : 6.5}
+        stampsToday={stampsToday}
+        campusYes={campusYes}
+        closed={booksClosed}
+        onClose={lockBooks}
+      />
 
       <section className="card p-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -155,6 +172,53 @@ export default function LoyaltyPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+function CloseStrip({
+  menu,
+  stampsToday,
+  campusYes,
+  closed,
+  onClose,
+}: {
+  menu: number;
+  stampsToday: number;
+  campusYes: boolean;
+  closed: boolean;
+  onClose: () => void;
+}) {
+  const books = closeBooks({ stampsToday, menu, campus: campusYes });
+  return (
+    <section className="card p-5">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
+            Tonight&apos;s close
+          </p>
+          <h2 className="mt-1 font-display text-2xl">
+            Card tape ${books.cardTape.toFixed(2)} · cash ${books.cashDrawer.toFixed(2)}
+          </h2>
+          <p className="mt-2 text-sm text-[var(--ink-soft)]">
+            {books.parfaitCount} parfaits (${books.parfait.toFixed(2)}) · coffee $
+            {books.coffee.toFixed(2)} · sales tax set aside $
+            {books.salesTax.toFixed(2)}. Drawer vs the counter:{" "}
+            {books.gap >= 0 ? "+" : ""}
+            ${books.gap.toFixed(2)}
+            {campusYes
+              ? ` · Union $${books.campus.toFixed(2)} on account, not in the Verifone.`
+              : "."}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-full bg-[var(--ink)] px-4 py-2 text-sm text-[var(--paper)]"
+        >
+          {closed ? "Closed for the night" : "Close the books"}
+        </button>
+      </div>
+    </section>
   );
 }
 

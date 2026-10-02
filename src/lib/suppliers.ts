@@ -81,7 +81,25 @@ function offersFor(ingredientId: string) {
   return OFFERS.filter((offer) => offer.ingredientId === ingredientId);
 }
 
-function chooseOffer(ingredientId: string, needed: boolean): Offer | null {
+const CREAMY = new Set([
+  "maple-mascarpone",
+  "brown-butter-custard",
+  "cinnamon-yogurt",
+  "chai-cream",
+  "honey-ricotta",
+  "vanilla-whip",
+  "pumpkin-mousse",
+  "cream-dollop",
+]);
+
+export function hikedPrice(offer: Offer, creamHike: number) {
+  if (creamHike <= 0 || !CREAMY.has(offer.ingredientId)) return offer.unitPrice;
+  const supplier = SUPPLIER_MAP[offer.supplierId];
+  if (supplier?.kind === "local" || offer.unit === "in-house") return offer.unitPrice;
+  return Number((offer.unitPrice * (1 + creamHike / 100)).toFixed(2));
+}
+
+function chooseOffer(ingredientId: string, needed: boolean, creamHike: number): Offer | null {
   const offers = offersFor(ingredientId);
   if (offers.length === 0) return null;
   if (!needed) return null;
@@ -89,12 +107,15 @@ function chooseOffer(ingredientId: string, needed: boolean): Offer | null {
   return [...offers].sort((a, b) => {
     const score = (offer: Offer) => {
       const supplier = SUPPLIER_MAP[offer.supplierId];
-      let value = offer.quality * 2 - offer.unitPrice * 0.15;
+      const price = hikedPrice(offer, creamHike);
+      let value = offer.quality * 2 - price * 0.15;
       if (offer.flags.includes("poor-quality")) value -= 4;
-      if (offer.flags.includes("price-hike")) value -= 3;
+      if (offer.flags.includes("price-hike") || (creamHike > 0 && CREAMY.has(offer.ingredientId) && supplier?.kind !== "local")) {
+        value -= 3;
+      }
       if (offer.flags.includes("duplicate")) value -= 1;
       if (supplier?.kind === "local") value += 1.2;
-      if (supplier?.kind === "trusted" && !offer.flags.includes("price-hike")) value += 0.6;
+      if (supplier?.kind === "trusted" && creamHike === 0 && !offer.flags.includes("price-hike")) value += 0.6;
       if (offer.unit === "in-house") value += 2;
       return value;
     };
@@ -102,7 +123,7 @@ function chooseOffer(ingredientId: string, needed: boolean): Offer | null {
   })[0]!;
 }
 
-export function optimizePurchasing(fotm: Recipe | null): PurchaseLine[] {
+export function optimizePurchasing(fotm: Recipe | null, creamHike = 0): PurchaseLine[] {
   const neededIds = new Set<string>(STAPLES);
   if (fotm) {
     for (const ingredient of recipeIngredients(fotm)) {
@@ -123,7 +144,7 @@ export function optimizePurchasing(fotm: Recipe | null): PurchaseLine[] {
     const habitualOffers = offers.filter((offer) => offer.habitual);
     const habitualOffer = habitualOffers.sort((a, b) => b.unitPrice - a.unitPrice)[0];
     const needed = neededIds.has(ingredientId);
-    const chosenOffer = chooseOffer(ingredientId, needed);
+    const chosenOffer = chooseOffer(ingredientId, needed, creamHike);
 
     let action: PurchaseLine["action"] = "keep";
     let reason = "Already on the morning list.";
@@ -180,14 +201,18 @@ export function optimizePurchasing(fotm: Recipe | null): PurchaseLine[] {
   return lines.sort((a, b) => rank[a.action] - rank[b.action] || a.ingredientId.localeCompare(b.ingredientId));
 }
 
-export function purchasingTotals(lines: PurchaseLine[]) {
+export function purchasingTotals(lines: PurchaseLine[], creamHike = 0) {
   const habitual = lines.reduce((sum, line) => {
     if (!line.habitualOffer) return sum;
-    return sum + line.habitualOffer.unitPrice * (line.needed ? line.weeklyQty : 4);
+    return (
+      sum +
+      hikedPrice(line.habitualOffer, creamHike) *
+        (line.needed ? line.weeklyQty : 4)
+    );
   }, 0);
   const optimized = lines.reduce((sum, line) => {
     if (!line.chosenOffer) return sum;
-    return sum + line.chosenOffer.unitPrice * line.weeklyQty;
+    return sum + hikedPrice(line.chosenOffer, creamHike) * line.weeklyQty;
   }, 0);
   return {
     habitual: Number(habitual.toFixed(2)),
