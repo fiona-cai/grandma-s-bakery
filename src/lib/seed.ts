@@ -1,0 +1,132 @@
+import type { ShopData } from "./types";
+
+export const SEED: ShopData = {
+  settings: { usualBatch: 24 },
+  pantry: [
+    { id: "greek-yogurt", name: "Greek yogurt", unit: "g", packSize: 1000, packPrice: 6.5, supplier: "Meadowdale Dairy", onHand: 0, color: "#f4efe6", layer: "cream" },
+    { id: "mascarpone", name: "Mascarpone", unit: "g", packSize: 500, packPrice: 7.2, supplier: "Meadowdale Dairy", onHand: 0, color: "#f7ecd2", layer: "cream" },
+    { id: "heavy-cream", name: "Heavy cream", unit: "ml", packSize: 1000, packPrice: 5.8, supplier: "Meadowdale Dairy", onHand: 0, color: "#fbf6ec", layer: "cream" },
+    { id: "granola", name: "Maple oat granola", unit: "g", packSize: 1000, packPrice: 8.0, supplier: "Hartwell Mill", onHand: 0, color: "#c98646", layer: "crunch" },
+    { id: "gingersnaps", name: "Gingersnap crumbs", unit: "g", packSize: 500, packPrice: 4.5, supplier: "Metro Wholesale", onHand: 0, color: "#8b5a2b", layer: "base" },
+    { id: "apples", name: "Honeycrisp apples", unit: "each", packSize: 12, packPrice: 9.0, supplier: "Hartwell Orchard", onHand: 0, color: "#e2b04a", layer: "fruit" },
+    { id: "pears", name: "Bosc pears", unit: "each", packSize: 8, packPrice: 7.0, supplier: "Hartwell Orchard", onHand: 0, color: "#c9a25c", layer: "fruit" },
+    { id: "cranberries", name: "Fresh cranberries", unit: "g", packSize: 340, packPrice: 4.0, supplier: "Lane's Farm Stand", onHand: 0, color: "#9a2d3a", layer: "fruit" },
+    { id: "pumpkin", name: "Pumpkin purée", unit: "g", packSize: 800, packPrice: 3.9, supplier: "Metro Wholesale", onHand: 0, color: "#d9792b", layer: "cream" },
+    { id: "maple-syrup", name: "Maple syrup", unit: "ml", packSize: 500, packPrice: 11.0, supplier: "Hartwell Mill", onHand: 0, color: "#a8541c", layer: "drizzle" },
+    { id: "pecans", name: "Pecans", unit: "g", packSize: 500, packPrice: 12.0, supplier: "Metro Wholesale", onHand: 0, color: "#7a4a2a", layer: "crunch" },
+    { id: "cinnamon", name: "Ground cinnamon", unit: "g", packSize: 100, packPrice: 3.5, supplier: "Metro Wholesale", onHand: 40, color: "#8a4b26", layer: "garnish" },
+  ],
+  parfaits: [
+    {
+      id: "p-apple-crumble",
+      name: "Apple Crumble Parfait",
+      notes: "Grandma's original, but with fresher apples.",
+      sellPrice: 7.5,
+      status: "testing",
+      ingredients: [
+        { itemId: "granola", qtyPerServing: 40 },
+        { itemId: "greek-yogurt", qtyPerServing: 120 },
+        { itemId: "apples", qtyPerServing: 0.5 },
+        { itemId: "maple-syrup", qtyPerServing: 15 },
+        { itemId: "cinnamon", qtyPerServing: 1 },
+      ],
+    },
+    {
+      id: "p-pumpkin-pie",
+      name: "Pumpkin Pie Parfait",
+      notes: "Mascarpone pumpkin layer over gingersnaps.",
+      sellPrice: 8,
+      status: "testing",
+      ingredients: [
+        { itemId: "gingersnaps", qtyPerServing: 35 },
+        { itemId: "pumpkin", qtyPerServing: 60 },
+        { itemId: "mascarpone", qtyPerServing: 50 },
+        { itemId: "heavy-cream", qtyPerServing: 30 },
+        { itemId: "cinnamon", qtyPerServing: 1 },
+      ],
+    },
+    {
+      id: "p-pear-pecan",
+      name: "Maple Pear & Pecan",
+      notes: "Roasted pears, toasted pecans.",
+      sellPrice: 8.5,
+      status: "testing",
+      ingredients: [
+        { itemId: "granola", qtyPerServing: 30 },
+        { itemId: "greek-yogurt", qtyPerServing: 100 },
+        { itemId: "pears", qtyPerServing: 0.5 },
+        { itemId: "pecans", qtyPerServing: 15 },
+        { itemId: "maple-syrup", qtyPerServing: 15 },
+      ],
+    },
+    {
+      id: "p-cranberry",
+      name: "Cranberry Cheesecake",
+      notes: "Tart cranberry compote, mascarpone cream.",
+      sellPrice: 8,
+      status: "testing",
+      ingredients: [
+        { itemId: "gingersnaps", qtyPerServing: 30 },
+        { itemId: "mascarpone", qtyPerServing: 60 },
+        { itemId: "greek-yogurt", qtyPerServing: 60 },
+        { itemId: "cranberries", qtyPerServing: 35 },
+        { itemId: "maple-syrup", qtyPerServing: 10 },
+      ],
+    },
+  ],
+  trials: [
+    {
+      id: "t-sample",
+      name: "Sample round (example data)",
+      startDate: "2026-09-19",
+      batchFraction: 0.25,
+      wastePct: 5,
+      status: "done",
+      purchase: null,
+      entries: [
+        {
+          parfaitId: "p-apple-crumble",
+          planned: 6,
+          made: 6,
+          sold: 6,
+          hoursToSell: 4,
+          feedback: [
+            { id: "f1", rating: 5, wouldBuyAgain: true, comment: "Tastes like the old one, but better." },
+            { id: "f2", rating: 4, wouldBuyAgain: true, comment: "Could use more crunch." },
+          ],
+        },
+        {
+          parfaitId: "p-pumpkin-pie",
+          planned: 6,
+          made: 6,
+          sold: 4,
+          hoursToSell: 8,
+          feedback: [
+            { id: "f3", rating: 3, wouldBuyAgain: false, comment: "Too close to the one next door." },
+          ],
+        },
+        {
+          parfaitId: "p-pear-pecan",
+          planned: 6,
+          made: 6,
+          sold: 5,
+          hoursToSell: 6,
+          feedback: [
+            { id: "f4", rating: 4, wouldBuyAgain: true, comment: "Pecans are great." },
+            { id: "f5", rating: 5, wouldBuyAgain: true, comment: "" },
+          ],
+        },
+        {
+          parfaitId: "p-cranberry",
+          planned: 6,
+          made: 6,
+          sold: 3,
+          hoursToSell: 8,
+          feedback: [
+            { id: "f6", rating: 3, wouldBuyAgain: false, comment: "Too tart for me." },
+          ],
+        },
+      ],
+    },
+  ],
+};

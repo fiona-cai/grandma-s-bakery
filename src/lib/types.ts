@@ -1,144 +1,88 @@
-export type FlavorTag =
-  | "sweet"
-  | "tart"
-  | "creamy"
-  | "crunchy"
-  | "bitter"
-  | "spicy"
-  | "floral"
-  | "nutty"
-  | "chocolate"
-  | "coffee"
-  | "fruit"
-  | "photogenic"
-  | "nostalgic"
-  | "novel"
-  | "healthy"
-  | "seasonal"
-  | "rich"
-  | "light"
-  | "bakeryClone";
+export type Unit = "g" | "ml" | "each";
 
-export type LayerKind =
-  | "base"
-  | "cream"
-  | "fruit"
-  | "crunch"
-  | "drizzle"
-  | "garnish";
+/** Where an ingredient sits in the glass; drives how it's drawn. */
+export type Layer = "base" | "cream" | "fruit" | "crunch" | "drizzle" | "garnish";
 
-export type Allergen = "dairy" | "nuts" | "gluten" | "egg";
-
-export type Vibe = "classic" | "date" | "critic" | "bright";
-export type Budget = "tight" | "comfortable" | "splurge";
-
-export interface Ingredient {
+export interface PantryItem {
   id: string;
   name: string;
-  layer: LayerKind;
-  tags: FlavorTag[];
-  cost: number;
-  quality: number;
-  allergen?: Allergen;
-  local: boolean;
+  unit: Unit;
+  /** How much comes in one pack, in `unit`. */
+  packSize: number;
+  /** Price of one pack. */
+  packPrice: number;
+  supplier: string;
+  /** Already in the kitchen, in `unit`. */
+  onHand: number;
   color: string;
-  note: string;
+  layer?: Layer;
 }
 
-export interface Persona {
+export interface RecipeLine {
+  itemId: string;
+  /** Amount of the pantry item in one parfait, in the item's unit. */
+  qtyPerServing: number;
+}
+
+export type ParfaitStatus = "idea" | "testing" | "winner" | "retired";
+
+export interface Parfait {
   id: string;
   name: string;
-  role: string;
-  comesFor: string;
-  bio: string;
-  emoji: string;
-  blush: string;
-  weights: Partial<Record<FlavorTag, number>>;
-  vetoAllergens: Allergen[];
-  priceSensitivity: number;
-  noveltyHunger: number;
-  bakerySkepticism: number;
-  quotes: {
-    rave: string[];
-    like: string[];
-    meh: string[];
-    pass: string[];
-    veto: string[];
-  };
+  notes: string;
+  sellPrice: number;
+  status: ParfaitStatus;
+  /** Listed bottom layer first. */
+  ingredients: RecipeLine[];
 }
 
-export interface Recipe {
+export interface Feedback {
+  id: string;
+  rating: number;
+  wouldBuyAgain: boolean;
+  comment: string;
+}
+
+export interface TrialEntry {
+  parfaitId: string;
+  planned: number;
+  made: number;
+  sold: number;
+  hoursToSell: number;
+  feedback: Feedback[];
+}
+
+export type TrialStatus = "planning" | "running" | "done";
+
+export interface Trial {
   id: string;
   name: string;
-  tagline: string;
-  layers: Record<LayerKind, string>;
-  vibe: Vibe;
+  startDate: string;
+  batchFraction: number;
+  wastePct: number;
+  status: TrialStatus;
+  /** Snapshot of the order once Grandma marks it bought. */
+  purchase: PurchaseLine[] | null;
+  entries: TrialEntry[];
 }
-
-export interface TastingNote {
-  personaId: string;
-  score: number;
-  wouldOrder: boolean;
-  quote: string;
-  favorite: string;
-  concern: string | null;
-  vetoed: boolean;
-}
-
-export interface TastingResult {
-  recipe: Recipe;
-  notes: TastingNote[];
-  appeal: number;
-  wouldOrderShare: number;
-  cost: number;
-  novelty: number;
-  bakeryCloneRisk: number;
-  verdict: "crowd-pleaser" | "polarizing" | "niche" | "pass";
-}
-
-export interface Brief {
-  vibe: Vibe;
-  budget: Budget;
-  avoid: Allergen[];
-}
-
-export interface Supplier {
-  id: string;
-  name: string;
-  kind: "trusted" | "local" | "wholesale";
-  minutesAway: number;
-}
-
-export interface Offer {
-  id: string;
-  ingredientId: string;
-  supplierId: string;
-  unitPrice: number;
-  unit: string;
-  quality: number;
-  habitual: boolean;
-  flags: Array<"duplicate" | "price-hike" | "poor-quality" | "unnecessary">;
-}
-
-export type PurchaseAction = "keep" | "switch" | "drop" | "add";
 
 export interface PurchaseLine {
-  ingredientId: string;
-  needed: boolean;
-  habitualOffer?: Offer;
-  chosenOffer: Offer | null;
-  action: PurchaseAction;
-  reason: string;
-  weeklyQty: number;
+  itemId: string;
+  name: string;
+  unit: Unit;
+  packSize: number;
+  packs: number;
+  cost: number;
+  needed: number;
 }
 
-export interface Customer {
-  id: string;
-  name: string;
-  personaId: string;
-  visits: number;
-  points: number;
-  lastVisit: string;
-  note: string;
-  since: string;
+export interface Settings {
+  usualBatch: number;
+}
+
+export interface ShopData {
+  pantry: PantryItem[];
+  parfaits: Parfait[];
+  trials: Trial[];
+  settings: Settings;
 }

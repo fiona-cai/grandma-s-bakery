@@ -482,3 +482,49 @@ body {
     transition: none !important;
   }
 }
+
+/* ---------- form fields ---------- */
+
+.field {
+  width: 100%;
+  border: 2px solid var(--line);
+  background: var(--paper);
+  border-radius: 14px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--cocoa);
+  transition: border-color 140ms ease;
+}
+
+.field:hover {
+  border-color: var(--oat-deep);
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px var(--teal-mist);
+}
+
+.btn:disabled,
+.chip:disabled,
+.pick:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media print {
+  body {
+    background: white;
+  }
+  .awning,
+  footer {
+    display: none;
+  }
+  .card,
+  .notepad {
+    box-shadow: none;
+  }
+}

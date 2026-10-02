@@ -7,20 +7,21 @@ import type { ReactNode } from "react";
 
 const LINKS = [
   { href: "/", label: "The shop", icon: "🏠" },
-  { href: "/flavor", label: "Flavor studio", icon: "🥄" },
-  { href: "/supplies", label: "Morning list", icon: "📝" },
-  { href: "/loyalty", label: "Regulars & till", icon: "💌" },
+  { href: "/trials", label: "Trial rounds", icon: "🥄" },
+  { href: "/parfaits", label: "Parfaits", icon: "🍨" },
+  { href: "/pantry", label: "Pantry", icon: "🧺" },
 ];
 
 export function Shell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { fotm } = useShop();
+  const { parfaits } = useShop();
+  const winner = parfaits.find((parfait) => parfait.status === "winner");
 
   return (
     <div className="flex min-h-full flex-col">
-      <div className="awning" aria-hidden />
+      <div className="awning print:hidden" aria-hidden />
 
-      <header className="mx-auto mt-9 w-full max-w-6xl px-4 sm:px-6">
+      <header className="mx-auto mt-9 w-full max-w-6xl px-4 sm:px-6 print:hidden">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <Link href="/" className="group flex items-center gap-3">
             <LogoMark />
@@ -29,7 +30,7 @@ export function Shell({ children }: { children: ReactNode }) {
                 Grandma&apos;s <span className="text-[var(--teal)]">Bakeria</span>
               </span>
               <span className="font-hand -mt-0.5 block text-lg text-[var(--latte)]">
-                parfaits &amp; back office · est. 1987
+                parfait lab · est. 1987
               </span>
             </span>
           </Link>
@@ -60,17 +61,17 @@ export function Shell({ children }: { children: ReactNode }) {
           </nav>
         </div>
 
-        {fotm ? (
+        {winner ? (
           <div className="pop-in mt-5 flex flex-wrap items-center justify-between gap-2 rounded-full border-2 border-dashed border-[var(--teal)] bg-[var(--teal-foam)] px-5 py-2 text-sm">
             <p className="text-[var(--teal-ink)]">
               <span className="font-display font-semibold">✨ In the window this month:</span>{" "}
-              {fotm.name}
+              {winner.name}
             </p>
             <Link
-              href="/flavor"
+              href="/parfaits"
               className="font-display font-semibold text-[var(--teal-deep)] hover:underline"
             >
-              Back to the studio →
+              See the recipe →
             </Link>
           </div>
         ) : null}

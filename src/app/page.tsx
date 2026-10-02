@@ -1,32 +1,27 @@
 "use client";
 
-import { Avatar } from "@/components/Avatar";
 import { ParfaitGlass } from "@/components/ParfaitGlass";
-import { PERSONAS } from "@/lib/personas";
-import { BAKERY_AUTUMN, recipeIngredients } from "@/lib/recipes";
+import { leaderboard, money } from "@/lib/planner";
+import { SEED } from "@/lib/seed";
 import { useShop } from "@/lib/store";
+import type { ShopData } from "@/lib/types";
 import Link from "next/link";
-
-const HOUSE_SPECIAL = {
-  id: "house-special",
-  name: "Grandma's Friday Glass",
-  tagline: "Brown butter, honeycrisp, a cinnamon stick for stirring.",
-  layers: {
-    base: "brown-butter-cake",
-    cream: "maple-mascarpone",
-    fruit: "honeycrisp",
-    crunch: "candied-pecan",
-    drizzle: "dark-caramel",
-    garnish: "cinnamon-stick",
-  },
-  vibe: "classic",
-} as const;
+import { useRef } from "react";
 
 export default function HomePage() {
-  const { fotm, customers } = useShop();
-  const regulars = customers.filter((customer) => customer.visits >= 8).length;
-  const hero = fotm ?? { ...HOUSE_SPECIAL, layers: { ...HOUSE_SPECIAL.layers } };
-  const heroLayers = recipeIngredients(hero);
+  const shop = useShop();
+  const { trials, parfaits, pantry, saveParfait } = shop;
+  const board = leaderboard(trials, parfaits, pantry);
+  const current = trials.find((t) => t.status !== "done");
+  const winner = parfaits.find((p) => p.status === "winner");
+  const hero = winner ?? board[0]?.parfait ?? parfaits[0];
+  const heroLayers = hero
+    ? hero.ingredients
+        .map((line) => pantry.find((item) => item.id === line.itemId))
+        .filter((item) => item !== undefined)
+    : [];
+  const spent = trials.reduce((s, t) => s + (t.purchase?.reduce((a, l) => a + l.cost, 0) ?? 0), 0);
+  const feedbackCount = trials.reduce((s, t) => s + t.entries.reduce((a, e) => a + e.feedback.length, 0), 0);
 
   return (
     <div className="space-y-16">
@@ -35,151 +30,198 @@ export default function HomePage() {
         <div className="pop-in">
           <span className="tag tag-teal">🍂 October menu planning</span>
           <h1 className="font-display mt-4 text-[2.6rem] font-semibold leading-[1.05] text-[var(--cocoa)] sm:text-6xl">
-            Layer by layer,
+            Test small,
             <br />
             win back <span className="text-[var(--teal)]">fall.</span>
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-[var(--cocoa-soft)]">
-            A chain called <strong>The Bakery</strong> opened next door with a pumpkin
-            parfait sold in 400 towns. Grandma&apos;s answer: invent a better glass,
-            let six neighbors taste it, then buy only what it needs.
+            A chain called <strong>The Bakery</strong> opened next door with a
+            suspiciously familiar parfait. Grandma&apos;s answer: four quarter
+            batches, one combined grocery order, and the town votes with its
+            wallet.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <Link href="/flavor" className="btn btn-teal">
-              🥄 Build a parfait
+            <Link href="/trials" className="btn btn-teal">
+              🥄 Start a trial round
             </Link>
-            <Link href="/loyalty" className="btn btn-ghost">
-              💌 Open the till
+            <Link href="/parfaits" className="btn btn-ghost">
+              🍨 Write a recipe
             </Link>
           </div>
           <p className="font-hand mt-6 text-2xl text-[var(--latte)]">
-            ↳ {regulars} regulars are already waiting on this one.
+            ↳ {trials.length} round{trials.length === 1 ? "" : "s"} so far, {feedbackCount} customer
+            reviews, {money(spent)} spent.
           </p>
         </div>
 
-        <div className="relative mx-auto w-full max-w-sm">
-          <div className="absolute inset-6 rounded-full bg-[var(--teal-mist)]" aria-hidden />
-          <div
-            className="absolute inset-12 rounded-full border-2 border-dashed border-[var(--teal)] opacity-40"
-            aria-hidden
-          />
-          <div className="float relative py-6">
-            <ParfaitGlass recipe={hero} size="lg" spoon />
+        {hero ? (
+          <div className="relative mx-auto w-full max-w-sm">
+            <div className="absolute inset-6 rounded-full bg-[var(--teal-mist)]" aria-hidden />
+            <div
+              className="absolute inset-12 rounded-full border-2 border-dashed border-[var(--teal)] opacity-40"
+              aria-hidden
+            />
+            <div className="float relative py-6">
+              <ParfaitGlass parfait={hero} pantry={pantry} size="lg" spoon />
+            </div>
+            <div className="card absolute -left-2 top-8 rotate-[-6deg] px-3 py-2 sm:-left-8">
+              <p className="kicker !text-[0.62rem]">
+                {winner ? "Crowned" : board.length ? "Leading" : "On the bench"}
+              </p>
+              <p className="font-display text-sm font-semibold leading-tight">{hero.name}</p>
+            </div>
+            <ul className="card absolute -right-2 bottom-6 rotate-[4deg] space-y-1 px-3 py-2.5 text-xs sm:-right-6">
+              {heroLayers
+                .slice()
+                .reverse()
+                .map((item) => (
+                  <li key={item.id} className="flex items-center gap-1.5">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full ring-1 ring-black/10"
+                      style={{ background: item.color }}
+                    />
+                    {item.name}
+                  </li>
+                ))}
+            </ul>
           </div>
-          <div className="card absolute -left-2 top-8 rotate-[-6deg] px-3 py-2 sm:-left-8">
-            <p className="kicker !text-[0.62rem]">{fotm ? "Crowned" : "House special"}</p>
-            <p className="font-display text-sm font-semibold leading-tight">{hero.name}</p>
-          </div>
-          <ul className="card absolute -right-2 bottom-6 rotate-[4deg] space-y-1 px-3 py-2.5 text-xs sm:-right-6">
-            {heroLayers
-              .slice()
-              .reverse()
-              .map((ingredient) => (
-                <li key={ingredient.id} className="flex items-center gap-1.5">
-                  <span
-                    className="h-2.5 w-2.5 rounded-full ring-1 ring-black/10"
-                    style={{ background: ingredient.color }}
-                  />
-                  {ingredient.name}
-                </li>
-              ))}
-          </ul>
-        </div>
+        ) : null}
       </section>
 
       {/* ---------- three jobs ---------- */}
       <section>
-        <SectionTitle kicker="Three little jobs" title="What the back office does" />
+        <SectionTitle kicker="Three little jobs" title="How a round works" />
         <div className="mt-6 grid gap-5 md:grid-cols-3">
           <JobCard
-            href="/flavor"
+            href="/parfaits"
             step="1"
-            icon="🥄"
-            title="Flavor studio"
-            body="Stack the Fall Parfait, let the booths argue, then put the winner on one window card: languages, allergens, swaps, a traveler cup, and replies to the reviews."
-            cta="Start tasting"
-            solves={["Flavor of the month", "Window & reviews", "Allergens", "3 languages", "Traveler cup"]}
+            icon="🍨"
+            title="Write the glasses"
+            body="Every recipe written for one parfait. Cost, price and margin update as Grandma types, and the glass stacks itself."
+            cta="Open recipes"
+            solves={["Recipe per glass", "Cost per parfait", "Margin"]}
           />
           <JobCard
-            href="/supplies"
+            href="/trials"
             step="2"
-            icon="📝"
-            title="Morning list"
-            body="The crowned glass writes tomorrow's call. Local growers stay when cream jumps, and the Union's forty-by-four sits on the same page."
-            cta="Check the list"
-            solves={["Purchasing", "Local growers", "Cream hike", "Shelf & spoilage", "Campus rush"]}
+            icon="🥄"
+            title="Run a trial round"
+            body="Pick up to four, make a quarter batch of each, and get one combined shopping list rounded to whole tubs and bags."
+            cta="Plan a round"
+            solves={["Quarter batches", "Bulk shopping list", "Sold vs. made", "Feedback"]}
           />
           <JobCard
-            href="/loyalty"
+            href="/pantry"
             step="3"
-            icon="💌"
-            title="Regulars & till"
-            body="Punch cards with names. Each stamp lands on tonight's close: card tape, cash, campus, and the tax pile she used to sort in March."
-            cta="Open the till"
-            solves={["Loyalty", "Who likes this glass", "Daily close & tax"]}
+            icon="🧺"
+            title="Mind the pantry"
+            body="Pack sizes, prices and what's already on the shelf. Leftovers from one round count toward the next, so nothing gets bought twice."
+            cta="Check the shelf"
+            solves={["Pack sizes", "Suppliers", "Leftovers"]}
           />
         </div>
       </section>
 
-      {/* ---------- versus ---------- */}
-      <section className="card-teal grid items-center gap-6 p-6 sm:p-8 md:grid-cols-[auto_1fr_auto]">
-        <div className="text-center">
-          <ParfaitGlass recipe={BAKERY_AUTUMN} size="sm" animate={false} />
-          <p className="font-display mt-2 text-sm font-semibold text-[var(--latte)]">
-            Next door
-          </p>
-        </div>
-        <div className="text-center md:text-left">
-          <p className="kicker">The rivalry</p>
-          <h2 className="font-display mt-1 text-3xl font-semibold text-[var(--teal-ink)]">
-            Pumpkin, pumpkin, pumpkin, granola.
-          </h2>
-          <p className="mt-2 text-[var(--cocoa-soft)]">
-            The Bakery&apos;s Autumn Parfait is the one people point at. Every glass in the
-            studio gets scored against it, and flagged when it starts to look like a copy.
-          </p>
-        </div>
-        <div className="text-center">
-          <ParfaitGlass recipe={hero} size="sm" animate={false} />
-          <p className="font-display mt-2 text-sm font-semibold text-[var(--teal-deep)]">
-            Grandma&apos;s
-          </p>
-        </div>
-      </section>
+      {/* ---------- current round ---------- */}
+      {current ? (
+        <section className="card-teal grid items-center gap-6 p-6 sm:p-8 md:grid-cols-[1fr_auto]">
+          <div>
+            <p className="kicker">Right now</p>
+            <h2 className="font-display mt-1 text-3xl font-semibold text-[var(--teal-ink)]">
+              {current.name}
+            </h2>
+            <p className="mt-2 text-[var(--cocoa-soft)]">
+              {current.status === "running"
+                ? "Selling. Log what goes out of the case and what people say at the counter."
+                : current.purchase
+                  ? "Ingredients are bought. Time to bake."
+                  : "Planning. The shopping list hasn't been bought yet."}
+            </p>
+            <div className="mt-4 flex flex-wrap items-end gap-4">
+              {current.entries.map((entry) => {
+                const parfait = parfaits.find((p) => p.id === entry.parfaitId);
+                return parfait ? (
+                  <ParfaitGlass key={entry.parfaitId} parfait={parfait} pantry={pantry} size="xs" animate={false} />
+                ) : null;
+              })}
+            </div>
+          </div>
+          <Link href={`/trials/${current.id}`} className="btn btn-teal">
+            Open the round →
+          </Link>
+        </section>
+      ) : null}
 
-      {/* ---------- jury ---------- */}
+      {/* ---------- leaderboard ---------- */}
       <section>
         <SectionTitle
-          kicker="The taste jury"
-          title="Six neighbors, six opinions"
-          aside={`${regulars} regulars map onto these palates`}
+          kicker="The leaderboard"
+          title="What the town actually picked"
+          aside="40% sold out · 40% stars · 20% speed"
         />
-        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {PERSONAS.map((persona, index) => (
-            <article
-              key={persona.id}
-              className="card card-hover p-5"
-              style={{ rotate: `${index % 2 ? 0.6 : -0.6}deg` }}
-            >
-              <div className="flex items-center gap-3">
-                <Avatar emoji={persona.emoji} blush={persona.blush} />
-                <div>
-                  <h3 className="font-display text-lg font-semibold leading-tight">
-                    {persona.name}
-                  </h3>
-                  <p className="text-sm font-bold text-[var(--teal)]">{persona.role}</p>
-                </div>
-              </div>
-              <p className="mt-3 text-sm leading-relaxed text-[var(--cocoa-soft)]">
-                {persona.bio}
-              </p>
-              <p className="font-hand mt-3 text-xl leading-tight text-[var(--latte)]">
-                comes for: {persona.comesFor.toLowerCase()}
-              </p>
-            </article>
-          ))}
-        </div>
+        {board.length === 0 ? (
+          <p className="mt-6 text-[var(--cocoa-soft)]">Log results in a trial round to see rankings.</p>
+        ) : (
+          <ol className="mt-6 grid gap-5 sm:grid-cols-2">
+            {board.map((row, index) => {
+              const avg = row.ratings.length
+                ? row.ratings.reduce((a, b) => a + b, 0) / row.ratings.length
+                : null;
+              return (
+                <li
+                  key={row.parfait.id}
+                  className={`${index === 0 ? "card-teal" : "card"} card-hover flex gap-4 p-5`}
+                  style={{ rotate: `${index % 2 ? 0.6 : -0.6}deg` }}
+                >
+                  <ParfaitGlass parfait={row.parfait} pantry={pantry} size="sm" animate={false} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="kicker">
+                          #{index + 1}
+                          {row.parfait.status === "winner" ? " · 👑 crowned" : ""}
+                        </p>
+                        <h3 className="font-display text-xl font-semibold leading-tight">
+                          {row.parfait.name}
+                        </h3>
+                      </div>
+                      <span className="font-display rounded-2xl bg-[var(--oat)] px-3 py-1 text-2xl font-semibold">
+                        {row.score}
+                      </span>
+                    </div>
+                    <div className="meter mt-3">
+                      <span style={{ width: `${row.score}%` }} />
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      <span className="tag">
+                        {row.sold}/{row.made} sold
+                      </span>
+                      <span className="tag">{avg ? `${avg.toFixed(1)} ★` : "no stars yet"}</span>
+                      {row.feedbackCount ? (
+                        <span className="tag">
+                          {Math.round((row.buyAgain / row.feedbackCount) * 100)}% again
+                        </span>
+                      ) : null}
+                      <span className="tag tag-teal">{money(row.profit)} profit</span>
+                    </div>
+                    {index === 0 && row.parfait.status !== "winner" ? (
+                      <button
+                        type="button"
+                        onClick={() => saveParfait({ ...row.parfait, status: "winner" })}
+                        className="btn btn-cocoa btn-sm mt-4"
+                      >
+                        👑 Crown the new Fall Parfait
+                      </button>
+                    ) : null}
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        )}
       </section>
+
+      <Backup data={{ pantry, parfaits, trials, settings: shop.settings }} onLoad={shop.replaceAll} />
     </div>
   );
 }
@@ -234,5 +276,68 @@ function JobCard({
         {cta} →
       </p>
     </Link>
+  );
+}
+
+function Backup({ data, onLoad }: { data: ShopData; onLoad: (d: ShopData) => void }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const download = () => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `bakeria-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  const upload = async (file: File) => {
+    try {
+      const parsed = JSON.parse(await file.text()) as ShopData;
+      if (!Array.isArray(parsed.pantry) || !Array.isArray(parsed.parfaits) || !Array.isArray(parsed.trials)) {
+        throw new Error("bad file");
+      }
+      onLoad(parsed);
+    } catch {
+      alert("That file doesn't look like a Bakeria backup.");
+    }
+  };
+
+  return (
+    <section className="card flex flex-col items-start gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+      <div>
+        <p className="kicker">📒 The notebook</p>
+        <h2 className="font-display mt-1 text-2xl font-semibold">Keep a copy</h2>
+        <p className="mt-1 text-sm text-[var(--cocoa-soft)]">
+          Everything lives in this browser only. Download a backup now and then.
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className="btn btn-ghost btn-sm" onClick={download}>
+          Download backup
+        </button>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={() => fileRef.current?.click()}>
+          Restore backup
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={() => confirm("Replace everything with the example data?") && onLoad(SEED)}
+        >
+          Reset to example data
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="application/json"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) upload(file);
+            e.target.value = "";
+          }}
+        />
+      </div>
+    </section>
   );
 }

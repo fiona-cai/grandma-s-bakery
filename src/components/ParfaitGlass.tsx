@@ -1,12 +1,18 @@
-import { recipeIngredients } from "@/lib/recipes";
 import { mulberry32, seedFrom } from "@/lib/rng";
-import type { Ingredient, LayerKind, Recipe } from "@/lib/types";
+import type { Layer, Parfait, PantryItem } from "@/lib/types";
 import { useId } from "react";
+
+interface Ingredient {
+  id: string;
+  name: string;
+  color: string;
+  layer?: Layer;
+}
 
 const SIZES = { xs: 52, sm: 76, md: 112, lg: 184 } as const;
 
 // Layer thickness inside the bowl, bottom to top. Garnish sits above the rim.
-const HEIGHTS: Record<Exclude<LayerKind, "garnish">, number> = {
+const HEIGHTS: Record<Exclude<Layer, "garnish">, number> = {
   base: 28,
   cream: 23,
   fruit: 20,
@@ -17,29 +23,42 @@ const HEIGHTS: Record<Exclude<LayerKind, "garnish">, number> = {
 const BOWL =
   "M12 50 C12 50 13 118 30 140 C38 151 48 156 60 156 C72 156 82 151 90 140 C107 118 108 50 108 50 Z";
 const BOTTOM = 158;
+// Room between the bowl floor and just under the rim.
+const FILL_ROOM = 100;
 
 export function ParfaitGlass({
-  recipe,
+  parfait,
+  pantry,
   size = "md",
   animate = true,
   spoon = false,
 }: {
-  recipe: Recipe;
+  parfait: Parfait;
+  pantry: PantryItem[];
   size?: keyof typeof SIZES;
   animate?: boolean;
   spoon?: boolean;
 }) {
   const rawId = useId();
   const clipId = `bowl-${rawId.replace(/[^a-zA-Z0-9]/g, "")}`;
-  const ingredients = recipeIngredients(recipe);
+  const ingredients = parfait.ingredients
+    .map((line) => pantry.find((item) => item.id === line.itemId))
+    .filter((item): item is PantryItem => Boolean(item));
   const filling = ingredients.filter((ingredient) => ingredient.layer !== "garnish");
   const garnish = ingredients.find((ingredient) => ingredient.layer === "garnish");
   const cream = ingredients.find((ingredient) => ingredient.layer === "cream");
 
+  // squeeze layers when a recipe has more than the bowl can show
+  const natural = filling.reduce(
+    (sum, ingredient) => sum + (HEIGHTS[ingredient.layer as keyof typeof HEIGHTS] ?? 16),
+    0,
+  );
+  const squeeze = natural > FILL_ROOM ? FILL_ROOM / natural : 1;
+
   // compute each layer's top edge, stacking upward from the bottom of the bowl
   const placed = filling.reduce<{ ingredient: Ingredient; top: number; height: number }[]>(
     (stack, ingredient) => {
-      const height = HEIGHTS[ingredient.layer as keyof typeof HEIGHTS] ?? 16;
+      const height = (HEIGHTS[ingredient.layer as keyof typeof HEIGHTS] ?? 16) * squeeze;
       const below = stack.at(-1)?.top ?? 156;
       return [...stack, { ingredient, top: below - height, height }];
     },
@@ -54,9 +73,8 @@ export function ParfaitGlass({
       width={width}
       height={(width * 200) / 120}
       role="img"
-      aria-label={`${recipe.name}: ${ingredients.map((i) => i.name).join(", ")}`}
-      className="mx-auto block overflow-visible"
-      key={recipe.id}
+      aria-label={`${parfait.name}: ${ingredients.map((i) => i.name).join(", ") || "empty glass"}`}
+      className="mx-auto block shrink-0 overflow-visible"
     >
       <defs>
         <clipPath id={clipId}>
@@ -90,7 +108,7 @@ export function ParfaitGlass({
           const index = placed.length - 1 - reverseIndex;
           return (
             <g
-              key={ingredient.id}
+              key={`${ingredient.id}-${index}`}
               className={animate ? "layer-drop" : undefined}
               style={{ animationDelay: `${index * 110}ms` }}
             >
@@ -290,6 +308,7 @@ function Garnish({ ingredient, y }: { ingredient: Ingredient; y: number }) {
         </g>
       );
     case "cinnamon-stick":
+    case "cinnamon":
       return (
         <g className="wobble">
           <rect x="52" y={y - 16} width="6" height="26" rx="3" fill={color} transform={`rotate(-14 55 ${y})`} />

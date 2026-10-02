@@ -7,57 +7,56 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
-import { CUSTOMERS } from "./customers";
-import type { Recipe, TastingResult } from "./types";
+import { uid } from "./planner";
+import { SEED } from "./seed";
+import type { Parfait, PantryItem, PurchaseLine, ShopData, Trial, TrialEntry } from "./types";
 
-const STORAGE_KEY = "bakeria-shop";
+const STORAGE_KEY = "bakeria-v2";
 
-export interface ShopState {
-  fotm: Recipe | null;
-  lastTasting: TastingResult[] | null;
-  extraVisits: Record<string, number>;
-  replied: string[];
-  campusYes: boolean;
-  booksClosed: boolean;
-}
-
-const defaultState: ShopState = {
-  fotm: null,
-  lastTasting: null,
-  extraVisits: {},
-  replied: [],
-  campusYes: false,
-  booksClosed: false,
-};
-
-interface ShopContextValue extends ShopState {
-  adoptFotm: (recipe: Recipe, tasting: TastingResult[]) => void;
-  clearFotm: () => void;
-  stamp: (customerId: string) => void;
-  replyTo: (reviewId: string) => void;
-  takeCampus: (yes: boolean) => void;
-  closeBooks: () => void;
-  customers: typeof CUSTOMERS;
-  stampsToday: number;
+interface ShopContextValue extends ShopData {
+  ready: boolean;
+  savePantryItem: (item: PantryItem) => void;
+  deletePantryItem: (id: string) => void;
+  saveParfait: (parfait: Parfait) => void;
+  deleteParfait: (id: string) => void;
+  createTrial: (name: string, parfaitIds: string[], batchFraction: number) => string;
+  updateTrial: (id: string, patch: Partial<Trial>) => void;
+  updateEntry: (trialId: string, parfaitId: string, patch: Partial<TrialEntry>) => void;
+  deleteTrial: (id: string) => void;
+  markBought: (trialId: string, lines: PurchaseLine[]) => void;
+  undoBought: (trialId: string) => void;
+  setUsualBatch: (n: number) => void;
+  replaceAll: (data: ShopData) => void;
 }
 
 const ShopContext = createContext<ShopContextValue | null>(null);
 
-let snapshot: ShopState | null = null;
+let snapshot: ShopData | null = null;
 const listeners = new Set<() => void>();
 
-function readSnapshot(): ShopState {
+function readSnapshot(): ShopData {
   if (snapshot) return snapshot;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    snapshot = raw ? { ...defaultState, ...JSON.parse(raw) } : defaultState;
+    snapshot = raw ? withDefaults(JSON.parse(raw)) : SEED;
   } catch {
-    snapshot = defaultState;
+    snapshot = SEED;
   }
   return snapshot!;
 }
 
-function setState(update: (current: ShopState) => ShopState) {
+// Older saves predate pantry layers; borrow them from the seed by id.
+function withDefaults(saved: Partial<ShopData>): ShopData {
+  const data = { ...SEED, ...saved };
+  return {
+    ...data,
+    pantry: data.pantry.map((item) =>
+      item.layer ? item : { ...item, layer: SEED.pantry.find((s) => s.id === item.id)?.layer },
+    ),
+  };
+}
+
+function setData(update: (current: ShopData) => ShopData) {
   snapshot = update(readSnapshot());
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
@@ -82,55 +81,129 @@ function subscribe(listener: () => void) {
   };
 }
 
+// Never changes after mount; lets `ready` be false only during SSR/hydration.
+const subscribeNever = () => () => {};
+
 export function ShopProvider({ children }: { children: ReactNode }) {
-  const state = useSyncExternalStore(subscribe, readSnapshot, () => defaultState);
+  const data = useSyncExternalStore(subscribe, readSnapshot, () => SEED);
+  const ready = useSyncExternalStore(subscribeNever, () => true, () => false);
 
   const value = useMemo<ShopContextValue>(() => {
-    const customers = CUSTOMERS.map((customer) => {
-      const extra = state.extraVisits[customer.id] ?? 0;
-      return {
-        ...customer,
-        visits: customer.visits + extra,
-        points: customer.points + extra * 2,
-        lastVisit: extra > 0 ? "Just now" : customer.lastVisit,
-      };
-    });
-
-    const stampsToday = Object.values(state.extraVisits).reduce(
-      (sum, count) => sum + count,
-      0,
-    );
+    const upsert = <T extends { id: string }>(list: T[], next: T) =>
+      list.some((x) => x.id === next.id)
+        ? list.map((x) => (x.id === next.id ? next : x))
+        : [...list, next];
 
     return {
-      ...state,
-      customers,
-      stampsToday,
-      adoptFotm: (recipe, tasting) =>
-        setState((current) => ({ ...current, fotm: recipe, lastTasting: tasting })),
-      clearFotm: () =>
-        setState((current) => ({ ...current, fotm: null })),
-      stamp: (customerId) =>
-        setState((current) => ({
-          ...current,
-          extraVisits: {
-            ...current.extraVisits,
-            [customerId]: (current.extraVisits[customerId] ?? 0) + 1,
-          },
-          booksClosed: false,
+      ...data,
+      ready,
+      savePantryItem: (item) =>
+        setData((d) => ({ ...d, pantry: upsert(d.pantry, item) })),
+      deletePantryItem: (id) =>
+        setData((d) => ({
+          ...d,
+          pantry: d.pantry.filter((x) => x.id !== id),
+          parfaits: d.parfaits.map((p) => ({
+            ...p,
+            ingredients: p.ingredients.filter((l) => l.itemId !== id),
+          })),
         })),
-      replyTo: (reviewId) =>
-        setState((current) => ({
-          ...current,
-          replied: current.replied.includes(reviewId)
-            ? current.replied
-            : [...current.replied, reviewId],
+      saveParfait: (parfait) =>
+        setData((d) => ({ ...d, parfaits: upsert(d.parfaits, parfait) })),
+      deleteParfait: (id) =>
+        setData((d) => ({
+          ...d,
+          parfaits: d.parfaits.filter((x) => x.id !== id),
+          trials: d.trials.map((t) => ({
+            ...t,
+            entries: t.entries.filter((e) => e.parfaitId !== id),
+          })),
         })),
-      takeCampus: (yes) => setState((current) => ({ ...current, campusYes: yes })),
-      closeBooks: () => setState((current) => ({ ...current, booksClosed: true })),
+      createTrial: (name, parfaitIds, batchFraction) => {
+        const id = uid("t");
+        setData((d) => {
+          const planned = Math.max(1, Math.round(d.settings.usualBatch * batchFraction));
+          const trial: Trial = {
+            id,
+            name,
+            startDate: new Date().toISOString().slice(0, 10),
+            batchFraction,
+            wastePct: 5,
+            status: "planning",
+            purchase: null,
+            entries: parfaitIds.map((parfaitId) => ({
+              parfaitId,
+              planned,
+              made: 0,
+              sold: 0,
+              hoursToSell: 0,
+              feedback: [],
+            })),
+          };
+          return { ...d, trials: [trial, ...d.trials] };
+        });
+        return id;
+      },
+      updateTrial: (id, patch) =>
+        setData((d) => ({
+          ...d,
+          trials: d.trials.map((t) => (t.id === id ? { ...t, ...patch } : t)),
+        })),
+      updateEntry: (trialId, parfaitId, patch) =>
+        setData((d) => ({
+          ...d,
+          trials: d.trials.map((t) =>
+            t.id !== trialId
+              ? t
+              : {
+                  ...t,
+                  entries: t.entries.map((e) =>
+                    e.parfaitId === parfaitId ? { ...e, ...patch } : e,
+                  ),
+                },
+          ),
+        })),
+      deleteTrial: (id) =>
+        setData((d) => ({ ...d, trials: d.trials.filter((t) => t.id !== id) })),
+      // Adds bought packs to the pantry, then takes out what the trial will use,
+      // so on-hand reflects the leftovers after the parfaits are made.
+      markBought: (trialId, lines) =>
+        setData((d) => ({
+          ...d,
+          pantry: adjustOnHand(d.pantry, lines, 1),
+          trials: d.trials.map((t) =>
+            t.id === trialId
+              ? { ...t, purchase: lines, status: t.status === "planning" ? "running" : t.status }
+              : t,
+          ),
+        })),
+      undoBought: (trialId) =>
+        setData((d) => {
+          const trial = d.trials.find((t) => t.id === trialId);
+          if (!trial?.purchase) return d;
+          return {
+            ...d,
+            pantry: adjustOnHand(d.pantry, trial.purchase, -1),
+            trials: d.trials.map((t) => (t.id === trialId ? { ...t, purchase: null } : t)),
+          };
+        }),
+      setUsualBatch: (n) =>
+        setData((d) => ({ ...d, settings: { ...d.settings, usualBatch: n } })),
+      replaceAll: (next) => setData(() => withDefaults(next)),
     };
-  }, [state]);
+  }, [data, ready]);
 
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
+}
+
+function adjustOnHand(pantry: PantryItem[], lines: PurchaseLine[], sign: 1 | -1) {
+  return pantry.map((item) => {
+    const line = lines.find((l) => l.itemId === item.id);
+    if (!line) return item;
+    const delta = line.packs * line.packSize - line.needed;
+    const onHand = Math.max(0, Math.round((item.onHand + sign * delta) * 100) / 100);
+    return { ...item, onHand };
+  });
 }
 
 export function useShop() {

@@ -24,7 +24,7 @@ const caveat = Caveat({
 export const metadata: Metadata = {
   title: "Grandma's Bakeria",
   description:
-    "Flavor studio, morning purchasing, and the regulars who will bring the Fall Parfait home.",
+    "Plan parfait trial rounds, buy ingredients in bulk, and track what customers love.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
