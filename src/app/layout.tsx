@@ -1,17 +1,24 @@
 import { Providers } from "@/components/Providers";
 import { Shell } from "@/components/Shell";
 import type { Metadata } from "next";
-import { Fraunces, Outfit } from "next/font/google";
+import { Caveat, Fredoka, Nunito } from "next/font/google";
 import "./globals.css";
 
-const outfit = Outfit({
-  variable: "--font-outfit",
+const fredoka = Fredoka({
+  variable: "--font-fredoka",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const nunito = Nunito({
+  variable: "--font-nunito",
   subsets: ["latin"],
 });
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const caveat = Caveat({
+  variable: "--font-caveat",
   subsets: ["latin"],
+  weight: ["500", "700"],
 });
 
 export const metadata: Metadata = {
@@ -24,7 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${fraunces.variable} h-full antialiased`}
+      className={`${fredoka.variable} ${nunito.variable} ${caveat.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <Providers>

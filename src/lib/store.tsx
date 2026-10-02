@@ -3,9 +3,8 @@
 import {
   createContext,
   useContext,
-  useEffect,
   useMemo,
-  useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { CUSTOMERS } from "./customers";
@@ -44,24 +43,37 @@ interface ShopContextValue extends ShopState {
 
 const ShopContext = createContext<ShopContextValue | null>(null);
 
+let snapshot: ShopState | null = null;
+const listeners = new Set<() => void>();
+
+function readSnapshot(): ShopState {
+  if (snapshot) return snapshot;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    snapshot = raw ? { ...defaultState, ...JSON.parse(raw) } : defaultState;
+  } catch {
+    snapshot = defaultState;
+  }
+  return snapshot!;
+}
+
+function setState(update: (current: ShopState) => ShopState) {
+  snapshot = update(readSnapshot());
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+  } catch {
+    // storage unavailable (private mode); keep the in-memory state
+  }
+  listeners.forEach((listener) => listener());
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
 export function ShopProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<ShopState>(defaultState);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setState({ ...defaultState, ...JSON.parse(raw) });
-    } catch {
-      setState(defaultState);
-    }
-    setReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (!ready) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [ready, state]);
+  const state = useSyncExternalStore(subscribe, readSnapshot, () => defaultState);
 
   const value = useMemo<ShopContextValue>(() => {
     const customers = CUSTOMERS.map((customer) => {
