@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #f6efe4;
+  --cream: #efe4d2;
+  --ink: #3b2416;
+  --ink-soft: #5c4030;
+  --muted: #8a6d55;
+  --line: #ddcbb3;
+  --maple: #b4531e;
+  --sage: #5f6f4d;
+  --berry: #9a2d3a;
+  --glass-foot: #c4a882;
+  --background: var(--paper);
+  --foreground: var(--ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-outfit);
+  --font-display: var(--font-fraunces);
+}
+
+html {
+  background: var(--paper);
+}
+
+body {
+  background:
+    radial-gradient(1200px 500px at 10% -10%, #fbead3 0%, transparent 50%),
+    radial-gradient(900px 400px at 100% 0%, #ead7bf 0%, transparent 45%),
+    var(--paper);
+  color: var(--ink);
+  font-family: var(--font-outfit), sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-fraunces), serif;
+}
+
+.card {
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, white 72%, var(--paper));
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+}
+
+.stamp {
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 999px;
+  border: 1.5px dashed var(--line);
+}
+
+.stamp.filled {
+  border-style: solid;
+  background: var(--maple);
+  border-color: var(--maple);
+}
