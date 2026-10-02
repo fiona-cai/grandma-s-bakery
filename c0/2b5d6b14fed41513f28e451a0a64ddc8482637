@@ -1,0 +1,91 @@
+next.config.ts
+  s_628a8d8d210bea::t_28b85486d9c6a3 1-7
+src/app/supplies/page.tsx
+  s_628a8d8d210bea::t_99888a2d7d4e67 1-163
+src/app/globals.css
+  s_628a8d8d210bea::t_3996234c74050b 4-15,19-20,25-26,31-32,34,42-46,49-53,56-59
+  s_628a8d8d210bea::t_d25488cd554f62 21-22,30,33,35-41,47-48,54-55
+  s_628a8d8d210bea::t_28b85486d9c6a3 1-3,16-18,23-24,27-29,60
+eslint.config.mjs
+  s_628a8d8d210bea::t_28b85486d9c6a3 1-18
+src/app/flavor/page.tsx
+  s_628a8d8d210bea::t_e727980d4ab769 1-385
+package.json
+  s_628a8d8d210bea::t_28b85486d9c6a3 1-26
+src/lib/recipes.ts
+  s_628a8d8d210bea::t_47e1cc876e12be 1-27,58-139,143-144,147-220
+  s_628a8d8d210bea::t_b33ec85887c35a 28-57
+  s_628a8d8d210bea::t_3b4446c950a9b4 140-142,145-146
+public/vercel.svg
+  s_628a8d8d210bea::t_28b85486d9c6a3 1
+.gitignore
+  s_628a8d8d210bea::t_28b85486d9c6a3 1-41
+README.md
+  s_628a8d8d210bea::t_28b85486d9c6a3 1-36
+src/app/layout.tsx
+  s_628a8d8d210bea::t_780d7a8e5ca393 4,18-19,29,31,33
+  s_628a8d8d210bea::t_b8b7c1a2990fad 1-2,7-8,12-13,20,27,30,32
+  s_628a8d8d210bea::t_28b85486d9c6a3 3,5-6,9-11,14-17,21-26,28,34-36
+src/app/page.tsx
+  s_628a8d8d210bea::t_2d812f8adb3910 1,3-12,14-21,23-31,33-37,39-100,103-122,124,126-145
+  s_628a8d8d210bea::t_28b85486d9c6a3 2,13,22,32,38,101-102,123,125,146-147
+public/globe.svg
+  s_628a8d8d210bea::t_28b85486d9c6a3 1
+src/lib/rng.ts
+  s_628a8d8d210bea::t_013ef9cbd91882 1-32
+src/lib/customers.ts
+  s_628a8d8d210bea::t_5fc4db11134e3d 1-26
+public/next.svg
+  s_628a8d8d210bea::t_28b85486d9c6a3 1
+src/lib/types.ts
+  s_628a8d8d210bea::t_7df6b2cc59a531 1-144
+src/components/ParfaitGlass.tsx
+  s_628a8d8d210bea::t_664436c5bd4a47 1-35
+postcss.config.mjs
+  s_628a8d8d210bea::t_28b85486d9c6a3 1-7
+public/file.svg
+  s_628a8d8d210bea::t_28b85486d9c6a3 1
+src/lib/suppliers.ts
+  s_628a8d8d210bea::t_bc36d0537ffc3e 67-69
+  s_628a8d8d210bea::t_bf8034ff56dea2 1-66,70-206
+tsconfig.json
+  s_628a8d8d210bea::t_28b85486d9c6a3 1-34
+src/components/Shell.tsx
+  s_628a8d8d210bea::t_882bf9f6d3b759 1-2,4-10,12-19,26,29-30,32-40,42,45-53,55-56,59,62-70
+  s_628a8d8d210bea::t_1abc82aba3ac59 3,11,20-25,27-28,31,41,43-44,54,57-58,60-61
+src/app/loyalty/page.tsx
+  s_628a8d8d210bea::t_648600d943bf58 1-215
+src/lib/personas.ts
+  s_628a8d8d210bea::t_27bc916e0ad871 1-118,120-260,262-277
+  s_628a8d8d210bea::t_0bc393f1b1e61b 261
+  s_628a8d8d210bea::t_73bafad0b9920e 119
+src/lib/store.tsx
+  s_628a8d8d210bea::t_346adb420428ca 1-28,30,33-41,48-52,54-55,68,75-80,84-88,92
+  s_628a8d8d210bea::t_302adc47b6d0ac 29,31-32,42-47,53,56-67,69-74,81-83,89-91
+src/components/Providers.tsx
+  s_628a8d8d210bea::t_efdb6205477b67 1-8
+public/window.svg
+  s_628a8d8d210bea::t_28b85486d9c6a3 1
+src/lib/tasting.ts
+  s_628a8d8d210bea::t_039a4f6e23aa65 1-132
+src/lib/ingredients.ts
+  s_628a8d8d210bea::t_83ef055fa4878f 65-75
+  s_628a8d8d210bea::t_3c9fe5eec36ed5 160-181
+  s_628a8d8d210bea::t_a7e7a842f3fcc3 1-64,76-159,182-484
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c02b5d6b14fed41513f28e451a0a64ddc8482637",
+  "prompts": {},
+  "sessions": {
+    "s_628a8d8d210bea": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "95d9852e-ec6d-44df-a141-b07637b51ca0",
+        "model": "grok-4.6"
+      },
+      "human_author": "Fiona Cai <69484076+fiona-cai@users.noreply.github.com>"
+    }
+  }
+}
