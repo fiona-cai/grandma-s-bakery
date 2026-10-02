@@ -1,0 +1,49 @@
+src/lib/store.tsx
+  s_628a8d8d210bea::t_6527a05beb67e5 77-81,85,97-104,106-107
+  s_628a8d8d210bea::t_9452a04cb99968 20-22,29-31,38-40,42
+src/app/page.tsx
+  s_628a8d8d210bea::t_305ea7df5c9a64 9-44,54,57,60-61,74,105-128
+src/components/Shell.tsx
+  s_628a8d8d210bea::t_84542c9503fbce 12
+src/app/supplies/page.tsx
+  s_628a8d8d210bea::t_ed199d99deba88 3-9,11,14,21,31-34,36-40,49,52-53,66,69-71,75,77-119,126-127,131-132,135-136,150-156,163,170,175,177,187,189,195-204,215
+src/components/GuestCard.tsx
+  s_628a8d8d210bea::t_553db2c48a5c30 4
+  s_628a8d8d210bea::t_f370a3a631e70c 74
+  s_628a8d8d210bea::t_6456c8c39c2e6b 1-3,5-73,75-129
+src/lib/suppliers.ts
+  s_628a8d8d210bea::t_c85ea4affdb2f3 147
+  s_628a8d8d210bea::t_5a36e5f9eb48c3 84-102,110-111,113-115,118,126
+  s_628a8d8d210bea::t_528fbd79bbd013 204,207-211,215
+src/app/flavor/page.tsx
+  s_628a8d8d210bea::t_85307605690b50 209-210
+  s_628a8d8d210bea::t_2fcc664e8a10e7 79-81
+  s_628a8d8d210bea::t_8c16f0f971cc04 3
+  s_628a8d8d210bea::t_a8e6b39454c0f2 290-291
+src/lib/desk.ts
+  s_628a8d8d210bea::t_3e4093784d1396 1-13,15-263,265-271,273-275,277-303
+  s_628a8d8d210bea::t_84ba741866699d 14
+  s_628a8d8d210bea::t_13c4eef43ded2b 264,272,276
+src/app/loyalty/page.tsx
+  s_628a8d8d210bea::t_025abe87a8ddf2 178-203,206,211-224
+  s_628a8d8d210bea::t_d7fc84d97ad745 4,13-22
+  s_628a8d8d210bea::t_b201b85c286a7e 57,60,63-64,68-74
+  s_628a8d8d210bea::t_2632c467935cb0 204-205,207-210
+  s_628a8d8d210bea::t_b97c2b7e137aaa 75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2905686038c3449fa27f3ffc83d031793fc293ac",
+  "prompts": {},
+  "sessions": {
+    "s_628a8d8d210bea": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "95d9852e-ec6d-44df-a141-b07637b51ca0",
+        "model": "grok-4.6"
+      },
+      "human_author": "Fiona Cai <69484076+fiona-cai@users.noreply.github.com>"
+    }
+  }
+}
